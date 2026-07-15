@@ -356,7 +356,7 @@ let coolingDown = false;
 function violation(reason){
   if (submitted || coolingDown) return;
   if (!document.getElementById('scr-test').classList.contains('active')) return;
-  coolingDown = true; setTimeout(()=> coolingDown = false, 1500);
+  coolingDown = true; setTimeout(()=> coolingDown = false, 3000);
   state.violations++;
   state.log.push(new Date().toISOString() + " — " + reason);
   save();
@@ -370,6 +370,34 @@ function resumeTest(){
 }
 
 /* ---------- submission ---------- */
+function sendPayload(json){
+  try {
+    if (navigator.sendBeacon){
+      const ok = navigator.sendBeacon(SUBMIT_URL, new Blob([json], { type: "text/plain" }));
+      if (ok) return true;
+    }
+  } catch(e){}
+  try {
+    fetch(SUBMIT_URL, { method:"POST", mode:"no-cors", keepalive:true,
+      headers:{ "Content-Type":"text/plain" }, body: json }).catch(()=>{});
+    return true;
+  } catch(e){ return false; }
+}
+
+/* On every page load: resend any stuck submission, and support connection test mode */
+window.addEventListener('load', ()=>{
+  const pending = localStorage.getItem('klv_pending');
+  if (pending && sendPayload(pending)) localStorage.removeItem('klv_pending');
+  if (location.search.indexOf('test=1') > -1){
+    const t = JSON.stringify({
+      submittedAt: new Date().toISOString(), name: "CONNECTION TEST", email: "test@klyvora",
+      code: "TEST", startedAt: new Date().toISOString(), minutesUsed: 0,
+      submitType: "CONNECTION_TEST", violations: 0, violationLog: "", answers: {}
+    });
+    sendPayload(t);
+    setTimeout(()=> alert("Connection test sent!\n\nNow open your Google Sheet. Within 10 seconds a row named CONNECTION TEST should appear.\n\nIf no row appears, the mailbox setup needs fixing."), 500);
+  }
+});
 function confirmSubmit(){
   if (confirm("Submit your assessment now? You cannot make changes after submitting.")) doSubmit("CANDIDATE_SUBMIT");
 }
@@ -388,8 +416,9 @@ function doSubmit(how){
     violationLog: state.log.join(" | "),
     answers: state.answers
   };
-  fetch(SUBMIT_URL, { method:"POST", mode:"no-cors", headers:{ "Content-Type":"text/plain" }, body: JSON.stringify(payload) })
-    .catch(()=>{});
+  const json = JSON.stringify(payload);
+  localStorage.setItem('klv_pending', json);
+  if (sendPayload(json)) localStorage.removeItem('klv_pending');
   state.done = true;
   localStorage.setItem('klv_'+state.code, JSON.stringify(state));
   document.getElementById('overlay').style.display = 'none';
