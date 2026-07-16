@@ -95,7 +95,7 @@
       <label>Access Code (provided by Klyvora HR)</label>
       <input type="text" id="candCode" autocomplete="off" style="text-transform:uppercase">
       <div class="warn" id="loginWarn"></div>
-      <p style="margin-top:18px;"><button onclick="startTest()">Start Assessment (Fullscreen)</button></p>
+      <p style="margin-top:18px;"><button id="startBtn" onclick="startTest()">Start Assessment (Fullscreen)</button></p>
     </div>
   </div>
 
@@ -122,21 +122,7 @@
 
     <div id="secC" class="card" style="display:none">
       <h2>Section C — Practical Exercise: Bank Reconciliation (30 marks · suggested 40 min)</h2>
-      <p>Maplewood Trading LLC is preparing its bank reconciliation for the month ended December 31, 2025:</p>
-      <table class="datatable">
-        <tr><th>Item</th><th>Amount ($)</th></tr>
-        <tr><td>Cash balance per company books (general ledger), Dec 31</td><td class="amt">26,830</td></tr>
-        <tr><td>Cash balance per bank statement, Dec 31</td><td class="amt">27,925</td></tr>
-        <tr><td>Deposit made Dec 31, not yet on the bank statement</td><td class="amt">4,180</td></tr>
-        <tr><td>Outstanding check #1041</td><td class="amt">2,350</td></tr>
-        <tr><td>Outstanding check #1046</td><td class="amt">980</td></tr>
-        <tr><td>Outstanding check #1049</td><td class="amt">1,675</td></tr>
-        <tr><td>Bank service charge for December (not yet in books)</td><td class="amt">45</td></tr>
-        <tr><td>Customer check from R. Patel returned NSF</td><td class="amt">1,320</td></tr>
-        <tr><td>Note collected by bank: principal $2,000 + interest $60</td><td class="amt">2,060</td></tr>
-        <tr><td>Interest earned on the account for December</td><td class="amt">25</td></tr>
-        <tr><td>Check #1044 (utilities): written and cleared for $830, recorded in books as $380</td><td class="amt">—</td></tr>
-      </table>
+      <div id="cIntro"></div>
       <label>C1. Full bank reconciliation — reconcile BOTH the bank balance and the book balance to the adjusted cash balance. Label every figure. (14 marks)</label>
       <textarea id="ansC1" style="min-height:220px" oninput="save()"></textarea>
       <label>C2. For each reconciling item, one line explaining why it is added/deducted and on which side. (6 marks)</label>
@@ -149,8 +135,7 @@
 
     <div id="secD" class="card" style="display:none">
       <h2>Section D — Written Communication (20 marks · suggested 20 min)</h2>
-      <p>While completing the December reconciliation for Maplewood Trading LLC (Section C), you found two issues: (1) a $1,320 customer check from R. Patel was returned NSF and the receivable must be pursued; (2) check #1044 was recorded at the wrong amount ($380 instead of $830), suggesting a data-entry control issue.</p>
-      <p style="margin-top:8px;">Write an email (150–250 words) to your Senior Accountant, <b>Ms. Dana Whitfield</b>, summarizing the completed reconciliation, flagging both issues, and recommending specific next steps for each.</p>
+      <div id="dIntro"></div>
       <label>Subject line</label>
       <input type="text" id="ansDsub" oninput="save()">
       <label>Email body</label>
@@ -173,57 +158,8 @@
 <script>
 /* ================= CONFIG — EDIT THESE TWO LINES ================= */
 const SUBMIT_URL = "https://script.google.com/macros/s/AKfycbzSNGlbbMRLOIf4YMZorBLysUmjUsSSpQxWk-RHc_hvCIaCXKYi9reXuPSkzMuy8W4Z/exec";
-const ACCESS_CODES = ["KLV-7301","KLV-8264","KLV-1957","KLV-4482","KLV-6039","KLV-2718","KLV-9145","KLV-3506","KLV-5872","KLV-0623",
-                      "KLV-7749","KLV-1284","KLV-9036","KLV-4610","KLV-8357","KLV-2093","KLV-6541","KLV-3928","KLV-0175","KLV-5462",
-                      "KLV-8810","KLV-1349","KLV-7025","KLV-4697","KLV-2534","KLV-9871","KLV-6208","KLV-3153","KLV-0946","KLV-5780"];
 const DURATION_MIN = 120;
 /* ================================================================= */
-
-const MCQS = [
-["On November 1, a company received $9,000 cash for services to be performed evenly over the next six months and credited Unearned Revenue. What is the adjusting entry on December 31?",["Debit Unearned Revenue $3,000; Credit Service Revenue $3,000","Debit Cash $3,000; Credit Service Revenue $3,000","Debit Service Revenue $3,000; Credit Unearned Revenue $3,000","Debit Unearned Revenue $6,000; Credit Service Revenue $6,000"]],
-["Which of the following errors would NOT be detected by preparing a trial balance?",["Posting a debit amount as a credit","Completely omitting a transaction from the records","Recording only the debit side of an entry","Adding the debit column incorrectly"]],
-["On September 1, a company paid $2,400 for a 12-month insurance policy and debited Prepaid Insurance. What is the balance of Prepaid Insurance on December 31 after adjustment?",["$2,400","$800","$1,600","$2,000"]],
-["Under accrual-basis accounting, revenue is recognized when:",["Cash is received from the customer","The performance obligation is satisfied","The invoice is paid in full","The contract is signed"]],
-["Equipment costing $50,000 has a salvage value of $5,000 and a useful life of 5 years. Using the double-declining-balance method, what is depreciation expense for Year 2?",["$12,000","$18,000","$10,800","$20,000"]],
-["In a bank reconciliation, a note receivable collected by the bank on the company's behalf is:",["Deducted from the bank statement balance","Added to the bank statement balance","Added to the book (ledger) balance","Deducted from the book (ledger) balance"]],
-["Outstanding checks are treated in a bank reconciliation as:",["An addition to the book balance","A deduction from the book balance","An addition to the bank statement balance","A deduction from the bank statement balance"]],
-["Under the allowance method, writing off a specific customer's account receivable:",["Decreases net income","Decreases the net realizable value of receivables","Has no effect on the net realizable value of receivables","Increases bad debt expense"]],
-["An aging analysis indicates a required allowance for doubtful accounts of $8,200. The Allowance account currently has a credit balance of $1,500. Bad Debt Expense for the period is:",["$8,200","$9,700","$6,700","$1,500"]],
-["Which of the following accounts normally has a CREDIT balance?",["Accumulated Depreciation","Prepaid Rent","Dividends","Accounts Receivable"]],
-["If ending inventory is overstated, the effect on the current period is:",["COGS overstated; net income understated","COGS understated; net income overstated","COGS understated; net income understated","No effect on net income"]],
-["A company borrowed $100,000 on October 1 at 6% annual interest, with principal and interest due next year. Accrued interest payable at December 31 is:",["$6,000","$3,000","$1,500","$500"]],
-["Which of the following is a proper closing entry?",["Debit Service Revenue; Credit Income Summary","Debit Income Summary; Credit Service Revenue","Debit Retained Earnings; Credit Cash","Debit Salaries Expense; Credit Income Summary"]],
-["A $600 purchase of office supplies on account was debited to Equipment and credited to Accounts Payable. As a result of this error:",["The trial balance will not balance","Total assets are overstated by $600","The trial balance will still balance, but accounts are misclassified","Liabilities are understated by $600"]],
-["Cash collected from customers during the year was $200,000. Accounts Receivable was $30,000 at the beginning of the year and $45,000 at the end. Accrual-basis revenue is:",["$185,000","$200,000","$215,000","$245,000"]],
-["Working capital is calculated as:",["Total assets minus total liabilities","Current assets minus current liabilities","Current assets divided by current liabilities","Cash plus receivables minus payables"]],
-["Which of the following accounts is INCREASED by a debit?",["Unearned Revenue","Accounts Payable","Dividends","Service Revenue"]],
-["Goods shipped FOB shipping point on December 30, still in transit at December 31, should be included in the inventory of:",["The seller","The buyer","The freight carrier","Neither party until delivery"]],
-["A deposit in transit is treated in a bank reconciliation as:",["An addition to the bank statement balance","A deduction from the bank statement balance","An addition to the book balance","A deduction from the book balance"]],
-["The correct journal entry to record periodic depreciation is:",["Debit Accumulated Depreciation; Credit Depreciation Expense","Debit Depreciation Expense; Credit Equipment","Debit Depreciation Expense; Credit Accumulated Depreciation","Debit Equipment; Credit Accumulated Depreciation"]],
-["Which of the following is a contra-asset account?",["Unearned Revenue","Allowance for Doubtful Accounts","Prepaid Insurance","Notes Payable"]],
-["Unearned Revenue is classified on the balance sheet as:",["Revenue","A current asset","A liability","Stockholders' equity"]],
-["The expense recognition (matching) principle requires that expenses be recognized:",["When cash is paid","In the same period as the revenues they help generate","At the end of the fiscal year","When the invoice is received"]],
-["A 5-year note payable of $80,000 requires principal payments of $16,000 each year. On this year's balance sheet, the note is reported as:",["$80,000 current liability","$80,000 long-term liability","$16,000 current liability and $64,000 long-term liability","$64,000 current liability and $16,000 long-term liability"]],
-["Gross profit equals:",["Net sales minus operating expenses","Net sales minus cost of goods sold","Net income plus income tax","Net sales minus total expenses"]],
-["A check written for $450 to pay rent was correctly cleared by the bank but was recorded in the company's books as $540. On the bank reconciliation, the company should:",["Add $90 to the book balance","Deduct $90 from the book balance","Add $90 to the bank statement balance","Deduct $90 from the bank statement balance"]],
-["Machinery costing $84,000 with a $4,000 salvage value and an 8-year life was purchased on April 1. Using straight-line depreciation, depreciation expense for the year of purchase (calendar year-end) is:",["$10,000","$7,500","$10,500","$7,875"]],
-["Employees earned $5,600 of salaries in the last week of December, to be paid in January. The December 31 adjusting entry is:",["Debit Salaries Expense; Credit Cash","Debit Salaries Payable; Credit Salaries Expense","Debit Salaries Expense; Credit Salaries Payable","No entry is required until payment"]],
-["Net income for the period appears on which two financial statements (or statement links)?",["Income statement and statement of retained earnings","Balance sheet and bank reconciliation","Trial balance and general journal","Income statement and accounts payable aging"]],
-["When a petty cash fund is replenished, the journal entry includes:",["A debit to Petty Cash","A credit to Petty Cash","Debits to the various expense accounts and a credit to Cash","A debit to Cash and a credit to expense accounts"]]
-];
-
-const BQS = [
-"On December 1, a company paid $12,000 rent covering December through February and debited Prepaid Rent. State the amount on the December 31 income statement and the amount on the December 31 balance sheet, and identify the account names.",
-"On January 5, before closing the December books, the company received a $3,200 invoice for consulting services performed entirely in December. In which period should the expense be recognized, and what journal entry should be recorded?",
-"A company's cash-basis net income is $86,000. During the year, accounts receivable increased by $9,000 and accounts payable increased by $4,000. Calculate accrual-basis net income.",
-"A $1,200 routine repair to a delivery truck was incorrectly capitalized as an asset instead of being expensed. Ignoring depreciation, state the effect on (i) current-year net income and (ii) total assets (overstated / understated / no effect, and by how much).",
-"A trial balance is out of balance by $360. Name one specific type of recording error that commonly causes a difference divisible by 9, and give a numerical example that produces exactly $360.",
-"A company signed a $60,000 loan on August 1 at 9% annual interest. No interest has been paid or recorded. Calculate accrued interest at December 31 and write the adjusting journal entry.",
-"A client paid $15,000 in advance for a 10-month service contract beginning October 1, credited entirely to Service Revenue at receipt. What adjusting entry is required on December 31? Show the calculation.",
-"Equipment was purchased for $90,000 with a 10-year life and no salvage value (straight-line). At the start of Year 4, management revises the total useful life to 6 years. Calculate depreciation expense for Year 4.",
-"Accounts Receivable totals $240,000. The aging schedule estimates 3% of the $200,000 current balance and 15% of the $40,000 past-due balance to be uncollectible. The Allowance for Doubtful Accounts has a $2,400 DEBIT balance before adjustment. Calculate Bad Debt Expense.",
-"A customer's $1,320 check, previously recorded as a cash receipt, was returned by the bank marked NSF. Explain how this is treated in the bank reconciliation and write the journal entry the company must record."
-];
 
 let state = { name:"", email:"", code:"", start:0, violations:0, log:[], order:[], answers:{} };
 let submitted = false;
@@ -238,22 +174,40 @@ function seededShuffle(arr, seedStr){
   return a;
 }
 
-function startTest(){
+async function startTest(){
   const name = document.getElementById('candName').value.trim();
   const email = document.getElementById('candEmail').value.trim();
   const code = document.getElementById('candCode').value.trim().toUpperCase();
   const warn = document.getElementById('loginWarn');
+  const btn = document.getElementById('startBtn');
   if (!name || !email){ warn.textContent = "Please enter your full name and email address."; warn.style.display='block'; return; }
-  if (!ACCESS_CODES.includes(code)){ warn.textContent = "Invalid access code. Please check the code provided by Klyvora HR."; warn.style.display='block'; return; }
+  if (!code){ warn.textContent = "Please enter your access code."; warn.style.display='block'; return; }
   const prior = localStorage.getItem('klv_'+code);
   if (prior){
     const saved = JSON.parse(prior);
     if (saved.done){ warn.textContent = "This access code has already been used to submit an assessment."; warn.style.display='block'; return; }
-    state = saved; // resume after accidental refresh; timer continues from original start
+    state = saved; // resume after accidental refresh
   } else {
+    warn.style.display='none';
+    btn.disabled = true; btn.textContent = "Checking access code...";
+    let resp = null;
+    try {
+      const r = await fetch(SUBMIT_URL, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body: JSON.stringify({ action:"login", code: code }) });
+      resp = await r.json();
+    } catch(e) { resp = null; }
+    btn.disabled = false; btn.textContent = "Start Assessment (Fullscreen)";
+    if (!resp){ warn.textContent = "Could not reach the assessment server. Check your internet connection and try again."; warn.style.display='block'; return; }
+    if (!resp.ok){
+      warn.textContent = (resp.reason === "used")
+        ? "This access code has already been used to submit an assessment."
+        : "Invalid access code. Please check the code provided by Klyvora HR.";
+      warn.style.display='block'; return;
+    }
     state.name = name; state.email = email; state.code = code;
     state.start = Date.now();
-    state.order = seededShuffle(MCQS, code);
+    state.q = resp.questions;
+    state.order = seededShuffle(state.q.mcqs, code);
     save();
   }
   document.documentElement.requestFullscreen().catch(()=>{});
@@ -261,16 +215,26 @@ function startTest(){
   document.getElementById('scr-test').classList.add('active');
   document.getElementById('timer').style.display='block';
   renderQuestions();
+  fillIntros();
   restoreAnswers();
   armProctoring();
   tick(); setInterval(tick, 1000);
+}
+
+function fillIntros(){
+  const q = state.q;
+  let t = '<p>' + q.cIntro + '</p><table class="datatable"><tr><th>Item</th><th>Amount ($)</th></tr>';
+  q.cTable.forEach(r => { t += '<tr><td>' + r[0] + '</td><td class="amt">' + r[1] + '</td></tr>'; });
+  t += '</table>';
+  document.getElementById('cIntro').innerHTML = t;
+  document.getElementById('dIntro').innerHTML = q.dParas.map(p => '<p style="margin-top:8px;">' + p + '</p>').join('');
 }
 
 function renderQuestions(){
   const holder = document.getElementById('mcqHolder');
   let html = "";
   state.order.forEach((qi, pos)=>{
-    const q = MCQS[qi];
+    const q = state.q.mcqs[qi];
     html += `<div class="q"><p class="stem">${pos+1}. ${q[0]}</p>`;
     ["a","b","c","d"].forEach((L,oi)=>{
       html += `<label class="opt"><input type="radio" name="A${qi}" value="${L}" onchange="save()"> ${L}) ${q[1][oi]}</label>`;
@@ -280,7 +244,7 @@ function renderQuestions(){
   holder.innerHTML = html;
   const bh = document.getElementById('bHolder');
   let bhtml = "";
-  BQS.forEach((q,i)=>{
+  state.q.bqs.forEach((q,i)=>{
     bhtml += `<div class="q"><p class="stem">B${i+1}. ${q} <span class="muted">(2 marks)</span></p>
     <textarea id="ansB${i+1}" placeholder="Workings + final answer..." oninput="save()"></textarea></div>`;
   });
@@ -407,6 +371,7 @@ function doSubmit(how){
   submitted = true;
   state.answers = collectAnswers();
   const payload = {
+    action: "submit",
     submittedAt: new Date().toISOString(),
     name: state.name, email: state.email, code: state.code,
     startedAt: new Date(state.start).toISOString(),
