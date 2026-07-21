@@ -80,6 +80,7 @@
       <p class="muted">Klyvora Group | Confidential</p>
       <h2>Before you begin — read carefully</h2>
       <ul style="margin:10px 0 10px 20px; line-height:1.7;">
+        <li><b>Use Google Chrome</b> on a laptop or desktop. Other browsers (Brave, Firefox, Safari, Edge) may fail to submit your answers even if the test appears to finish normally.</li>
         <li>Total time: <b>120 minutes</b>. The timer starts when you click Start and cannot be paused.</li>
         <li>Four sections: A — Multiple Choice (30) · B — Applied Reasoning (10) · C — Practical Exercise · D — Professional Email.</li>
         <li>The test runs in <b>fullscreen</b>. Switching tabs, minimizing, or leaving fullscreen is recorded. <b>Three violations = automatic submission.</b></li>
@@ -88,6 +89,7 @@
         <li>A basic calculator and rough paper (blank sheets only) are permitted. All amounts are in USD, US GAAP.</li>
         <li>Your answers auto-save as you type. Do not refresh or close the window.</li>
       </ul>
+      <div class="warn" id="browserWarn" style="display:none"></div>
       <label>Full Name</label>
       <input type="text" id="candName" autocomplete="off">
       <label>Email Address</label>
@@ -174,6 +176,28 @@ function seededShuffle(arr, seedStr){
   return a;
 }
 
+let DETECTED_BROWSER = "Unknown";
+async function detectBrowser(){
+  const ua = navigator.userAgent;
+  let name = "Unknown", ok = false;
+  try {
+    if (navigator.brave && typeof navigator.brave.isBrave === 'function' && await navigator.brave.isBrave()) {
+      name = "Brave";
+    } else if (/Firefox\//.test(ua)) { name = "Firefox"; }
+    else if (/Edg\//.test(ua)) { name = "Microsoft Edge"; }
+    else if (/OPR\//.test(ua)) { name = "Opera"; }
+    else if (/Chrome\//.test(ua) && !/Edg\//.test(ua)) { name = "Chrome"; ok = true; }
+    else if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) { name = "Safari"; }
+  } catch(e){}
+  DETECTED_BROWSER = name;
+  const w = document.getElementById('browserWarn');
+  if (!ok && w){
+    w.innerHTML = "\u26A0 We detected <b>" + name + "</b>. This assessment reliably submits answers only in <b>Google Chrome</b> \u2014 other browsers may silently fail to send your answers even though the test looks complete. Please close this tab and reopen the link in Chrome before starting.";
+    w.style.display = 'block';
+  }
+}
+detectBrowser();
+
 async function startTest(){
   const name = document.getElementById('candName').value.trim();
   const email = document.getElementById('candEmail').value.trim();
@@ -193,7 +217,7 @@ async function startTest(){
     let resp = null;
     try {
       const r = await fetch(SUBMIT_URL, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
-        body: JSON.stringify({ action:"login", code: code }) });
+        body: JSON.stringify({ action:"login", code: code, browser: DETECTED_BROWSER }) });
       resp = await r.json();
     } catch(e) { resp = null; }
     btn.disabled = false; btn.textContent = "Start Assessment (Fullscreen)";
@@ -379,6 +403,7 @@ function doSubmit(how){
     submitType: how,
     violations: state.violations,
     violationLog: state.log.join(" | "),
+    browser: DETECTED_BROWSER,
     answers: state.answers
   };
   const json = JSON.stringify(payload);
